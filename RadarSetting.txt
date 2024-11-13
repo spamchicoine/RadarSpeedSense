@@ -1,0 +1,37 @@
+Commands that have a user entered value (n) typically require a return key
+To get current respective settings/status just use the "Letter"? convention
+
+==== USE ====
+SX = 10k Sample Freq, Reports up to 69.5mph (+/- 0.136)
+US (hah) = Change units to mph (default m/s)
+F0 = Integer outputs (default decimal)
+R>n = Only report speeds above n
+R+/- = Report only inbound/outbound direction (may be flipped)
+A! - Save current settings to default config on startup
+AX - Reset default settings
+
+
+==== MAY USE ====
+R| = Report both directions
+K+ = Speed averaging of peak detected values across the nearest two speeds
+K- = Disables K+
+OJ - Turns output to JSON format
+^/+n.n - cosine error correction for inbound
+^/+n.n - cosine error correction for outbound
+IG - Interrupt on pin3 (J3), pull down when object detected
+N? - Get object count (adjusts to filters)
+N! - Reset count
+N# - Get count without reset
+PI - Idle power mode
+PA - Active power mode
+P! - System reset
+M>n -  Only report magnitudes above n
+Y<n.n - Alert above speed n.n, output msg and pin2 (J3)
+
+==== Hibernate ====
+Radar sends pulses in between hibernate time, if reading matches filters set the radar will stay on.
+
+Z+ = Enable hibernate mode
+Z- = Disable hibernate mode
+Z=n = Time to hibernate between pulses
+Z>n = Time to stay active on after pulse (default is 0.5 seconds)
