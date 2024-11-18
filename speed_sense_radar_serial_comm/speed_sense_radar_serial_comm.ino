@@ -1,5 +1,6 @@
 #include "WiFi.h"
 #include "time.h"
+#include "wifi_setup.h"
 
 // Digit 1
 const int DECODER0 = D0;
@@ -92,7 +93,11 @@ void loop() {
           Serial.println("Failed to obtain time");
           return;
         }
-        
+        send_SpeedData(values);
+        values = String("")
+        char timestamp[maxsize];
+        strftime(timestamp, maxsize, "%D %T", &timeinfo);
+        values.concat(String(timestamp))
       }
     }
   }
@@ -119,7 +124,7 @@ void loop() {
   }
   // No data -> new line and timestamp
   else{
-    char timestamp[20];
+    char timestamp[maxsize];
     strftime(timestamp, maxsize, "%D %T", &timeinfo);
     values.concat(String("\n"+timestamp))
 
@@ -128,5 +133,5 @@ void loop() {
 }
 
 void config() {
-
+  //TO DO
 }
