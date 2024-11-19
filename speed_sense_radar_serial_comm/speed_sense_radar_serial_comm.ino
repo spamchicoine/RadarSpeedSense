@@ -39,7 +39,8 @@ int dec_bin[][4] = {{0,0,0,0},
                     {0,1,1,0},
                     {0,1,1,1},
                     {1,0,0,0},
-                    {1,0,0,1}};
+                    {1,0,0,1},
+                    {1,0,1,0}}; // 10 for blank
 
 void setup() {
   // Begin Serial connection with Radar
@@ -71,6 +72,16 @@ void setup() {
   pinMode(DECODER5, OUTPUT);
   pinMode(DECODER6, OUTPUT);
   pinMode(DECODER7, OUTPUT);
+
+  // Set sev segs to blank by default
+  digitalWrite(DECODER0, dec_bin[10][0]);
+  digitalWrite(DECODER1, dec_bin[10][1]);
+  digitalWrite(DECODER2, dec_bin[10][2]);
+  digitalWrite(DECODER3, dec_bin[10][3]);
+  digitalWrite(DECODER4, dec_bin[10][0]);
+  digitalWrite(DECODER5, dec_bin[10][1]);
+  digitalWrite(DECODER6, dec_bin[10][2]);
+  digitalWrite(DECODER7, dec_bin[10][3]);
 
 }
 
@@ -128,7 +139,14 @@ void loop() {
     strftime(timestamp, maxsize, "%D %T", &timeinfo);
     values.concat(String("\n"+timestamp))
 
-    // TO DO SET BCDS OFF
+    digitalWrite(DECODER0, dec_bin[10][0]);
+    digitalWrite(DECODER1, dec_bin[10][1]);
+    digitalWrite(DECODER2, dec_bin[10][2]);
+    digitalWrite(DECODER3, dec_bin[10][3]);
+    digitalWrite(DECODER4, dec_bin[10][0]);
+    digitalWrite(DECODER5, dec_bin[10][1]);
+    digitalWrite(DECODER6, dec_bin[10][2]);
+    digitalWrite(DECODER7, dec_bin[10][3]);
   }
 }
 
