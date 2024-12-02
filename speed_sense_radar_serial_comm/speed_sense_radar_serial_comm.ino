@@ -14,6 +14,13 @@ const int DECODER5 = D8;
 const int DECODER6 = D9;
 const int DECODER7 = D10;
 
+// Setup mode button pin (temp use for sending sample data)
+const int BUTTON0 = D4;
+bool bflag = false;
+
+// Sample data
+//(TO DO)
+
 // Values to send to client
 String values = String("");
 
@@ -83,9 +90,12 @@ void setup() {
   digitalWrite(DECODER6, dec_bin[10][2]);
   digitalWrite(DECODER7, dec_bin[10][3]);
 
+  // Set button
+  pinMode(BUTTON0, INPUT);
 }
 
 void loop() {
+  checkbutton();
 
   ltime = (unsigned long)(millis() - millidif);
 
@@ -152,4 +162,17 @@ void loop() {
 
 void config() {
   //TO DO
+}
+
+void checkbutton() {
+  int read = digitalREAD(BUTTON0);
+  if (read == LOW) {
+    bflag = true;
+  }
+  else if (blfag == true && read == HIGH){
+    // send sample data
+    // TO DO
+    bflag = false;
+  }
+  
 }
