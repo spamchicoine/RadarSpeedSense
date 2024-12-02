@@ -24,6 +24,9 @@ bool bflag = false;
 // Values to send to client
 String values = String("");
 
+// Sample values to demo webapp graphin
+String sample_data = String(""); // TO DO
+
 // Digit values
 int speed, d1, d2;
 
@@ -171,7 +174,7 @@ void checkbutton() {
   }
   else if (blfag == true && read == HIGH){
     // send sample data
-    // TO DO
+    send_SpeedData(sample_data);
     bflag = false;
   }
   
