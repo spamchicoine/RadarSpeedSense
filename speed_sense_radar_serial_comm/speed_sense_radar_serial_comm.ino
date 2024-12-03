@@ -138,12 +138,17 @@ void loop() {
     // Set digits
     flash_time = (unsigned long)(millis() - flash_millidif);
 
-    if (flas_time >= 200){
+    if (flash_time >= 50){
         flash_millidif = flash_millidif + flash_time;
         flash_time = 0;
         flash_flag = (flash_flag + 1) % 2;
     }
-    if (flash_flag == 1 && speed > SPEED_LIMIT) {
+    if (flash_flag == 1) {
+      d1 = speed % 10;
+      digitalWrite(DECODER0, dec_bin[10][0]);
+      digitalWrite(DECODER1, dec_bin[10][1]);
+      digitalWrite(DECODER2, dec_bin[10][2]);
+      digitalWrite(DECODER3, dec_bin[10][3]);
       if (speed > 9){
         d2 = speed / 10;
         digitalWrite(DECODER4, dec_bin[d2][0]);
@@ -151,11 +156,6 @@ void loop() {
         digitalWrite(DECODER6, dec_bin[d2][2]);
         digitalWrite(DECODER7, dec_bin[d2][3]);
       }
-      d1 = speed % 10;
-      digitalWrite(DECODER0, dec_bin[d1][0]);
-      digitalWrite(DECODER1, dec_bin[d1][1]);
-      digitalWrite(DECODER2, dec_bin[d1][2]);
-      digitalWrite(DECODER3, dec_bin[d1][3]);
     }
     else {
       if (speed > 9){
@@ -165,10 +165,10 @@ void loop() {
         digitalWrite(DECODER6, dec_bin[10][2]);
         digitalWrite(DECODER7, dec_bin[10][3]);
       }
-      digitalWrite(DECODER4, dec_bin[10][0]);
-      digitalWrite(DECODER5, dec_bin[10][1]);
-      digitalWrite(DECODER6, dec_bin[10][2]);
-      digitalWrite(DECODER7, dec_bin[10][3]);
+      digitalWrite(DECODER4, dec_bin[d1][0]);
+      digitalWrite(DECODER5, dec_bin[d1][1]);
+      digitalWrite(DECODER6, dec_bin[d1][2]);
+      digitalWrite(DECODER7, dec_bin[d1][3]);
     }
   }
   // No data -> new line and timestamp
