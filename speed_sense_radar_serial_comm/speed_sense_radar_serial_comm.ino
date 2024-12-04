@@ -99,7 +99,7 @@ void setup() {
   pinMode(BUTTON0, INPUT);
 
   // Start radar hibernate mode
-  Serial.print("Z+")
+  //Serial.print("Z+")
 }
 
 void loop() {
