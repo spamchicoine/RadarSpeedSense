@@ -4,9 +4,9 @@
 
 // Digit 1
 const int DECODER0 = D0;
-const int DECODER1 = D1;
+const int DECODER1 = D3;
 const int DECODER2 = D2;
-const int DECODER3 = D3;
+const int DECODER3 = D1;
 
 // Digit 2
 const int DECODER4 = D5;
@@ -34,12 +34,8 @@ size_t maxsize = 20;
 unsigned long ltime, millidif;
 
 // Values for keeping track of flashing the digits
-unsigned long flash_time, flash_millidif
+unsigned long flash_time, flash_millidif;
 int flash_flag = 0;
-
-// Hardcoded values for WiFi setup
-const char *ssid = "Verizon-SM-N970U-4a7d";
-const char *password = "uqfw684*";
 
 // Binary values for the BCD control pins, index corrosponds to digit
 int dec_bin[][4] = {{0,0,0,0},
@@ -61,12 +57,7 @@ void setup() {
   delay(5);
 
   // Begin WiFi connection with client
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.print("\n");
+  setup_wifi();
 
   // Sync time with ntp server
   configTime(0, 0, "pool.ntp.org");
@@ -103,7 +94,7 @@ void setup() {
 }
 
 void loop() {
-  checkbutton();
+  //checkbutton();
 
   ltime = (unsigned long)(millis() - millidif);
 
@@ -123,17 +114,17 @@ void loop() {
           return;
         }
         send_SpeedData(values);
-        values = String("")
+        values = String("");
         char timestamp[maxsize];
-        strftime(timestamp, maxsize, "%D %T", &timeinfo);
-        values.concat(String(timestamp))
+        strftime(timestamp, maxsize, "%D-%T", &timeinfo);
+        values.concat(String(timestamp));
       }
     }
   }
   // Handle data from radar
   if (Serial.available()){
     speed = Serial.readString().toInt();
-    values.concat(String(" "+String(speed)))
+    values.concat(" "+String(speed));
 
     // Set digits
     flash_time = (unsigned long)(millis() - flash_millidif);
@@ -174,8 +165,8 @@ void loop() {
   // No data -> new line and timestamp
   else{
     char timestamp[maxsize];
-    strftime(timestamp, maxsize, "%D %T", &timeinfo);
-    values.concat(String("\n"+timestamp))
+    strftime(timestamp, maxsize, "%D-%T", &timeinfo);
+    values.concat("\n"+String(timestamp));
 
     digitalWrite(DECODER0, dec_bin[10][0]);
     digitalWrite(DECODER1, dec_bin[10][1]);
@@ -193,13 +184,23 @@ void config() {
 }
 
 void checkbutton() {
-  int read = digitalREAD(BUTTON0);
-  if (read == LOW) {
+  int read = digitalRead(BUTTON0);
+  if (read == HIGH) {
     bflag = true;
   }
-  else if (blfag == true && read == HIGH){
+  else if (bflag == true && read == LOW){
     // send sample data
-    send_SpeedData(sample_data);
+    Serial.println("Button pressed");
+    configTime(0, 0, "pool.ntp.org");
+    if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");
+      return;
+    }
+
+    char timestamp[maxsize];
+    strftime(timestamp, maxsize, "%D-%T", &timeinfo);
+
+    send_TestData((String(timestamp)+" 99 99 99\n"));
     bflag = false;
   }
   

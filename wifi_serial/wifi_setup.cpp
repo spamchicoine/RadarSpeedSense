@@ -18,10 +18,8 @@ HTTPClient client;
 
 
 void setup_wifi(){
-    delay(2000);
-    Serial.begin(115200);
-    delay(100);
-
+    WiFi.disconnect();
+    delay(1000);
     // Connect to Wi-Fi
     WiFi.begin(ssid, password);
     
@@ -66,6 +64,26 @@ void send_TestData(String Data) {
     // Send POST request
     int httpResponseCode = client.POST(Data);
 
+    // Check the HTTP response
+    if (httpResponseCode > 0) {
+      String response = client.getString();
+    }
+    client.end();
+  }
+}
+
+void send_debug(String Data) {
+  // Example string format:
+  if(WiFi.status() == WL_CONNECTED){
+    // start connection
+    client.begin(HOST_NAME+"/debugthing/");
+    // add headers
+    client.addHeader("Content-Type", "text/plain");
+    client.addHeader("Connection", "close");
+    client.addHeader("debug", Data);
+
+    // Send POST request
+    int httpResponseCode = client.POST(String(""));
     // Check the HTTP response
     if (httpResponseCode > 0) {
       String response = client.getString();
