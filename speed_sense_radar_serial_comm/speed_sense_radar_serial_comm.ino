@@ -193,6 +193,8 @@ void loop() {
     Serial.flush();
     delay(100);
     esp_light_sleep_enable();
+    // Light sleep will resume here, wifi is turned off.
+    setup_wifi();
   }
 }
 
