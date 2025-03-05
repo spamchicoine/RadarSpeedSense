@@ -16,18 +16,19 @@ const char* password = "t88-24O6";
 
 HTTPClient client;
 
-
 void setup_wifi(){
     delay(2000);
     Serial.begin(115200);
-    delay(100);
+    delay(1000);
 
     // Connect to Wi-Fi
     WiFi.begin(ssid, password);
     
     while (WiFi.status() != WL_CONNECTED) {
+        Serial.println("Connecting...")
         delay(1000);
     }
+    Serial.println("Connected")
 }
 
 void send_SpeedData(String Data) {

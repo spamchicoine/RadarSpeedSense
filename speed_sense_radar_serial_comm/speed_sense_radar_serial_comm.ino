@@ -14,15 +14,8 @@ const int DECODER5 = D8;
 const int DECODER6 = D9;
 const int DECODER7 = D10;
 
-// Setup mode button pin (temp use for sending sample data)
-const int BUTTON0 = D4;
-bool bflag = false;
-
 // Values to send to client
 String values = String("");
-
-// Sample values to demo webapp graphin
-String sample_data = String(""); // TO DO
 
 // Digit values
 int speed, d1, d2;
@@ -32,6 +25,10 @@ const int SPEED_LIMIT = 25;
 struct tm timeinfo;
 size_t maxsize = 20;
 unsigned long ltime, millidif;
+
+// Values for keeping track of sleeping
+int TIME_SINCE_VAL = 0;
+int uMS_S_FACTOR = 1000000;
 
 // Values for keeping track of flashing the digits
 unsigned long flash_time, flash_millidif;
@@ -52,10 +49,11 @@ int dec_bin[][4] = {{0,0,0,0},
 
 void setup() {
   // Begin Serial connection with Radar
-  Serial.begin(19200);
+  // If USB CDC on boot is disabled Serial defaults to RX/TX UART
+  Serial.begin(115200);
   while (!Serial);
-  delay(5);
-
+  delay(2000);
+  
   // Begin WiFi connection with client
   setup_wifi();
 
@@ -86,22 +84,19 @@ void setup() {
   digitalWrite(DECODER6, dec_bin[10][2]);
   digitalWrite(DECODER7, dec_bin[10][3]);
 
-  // Set button
-  pinMode(BUTTON0, INPUT);
-
-  // Start radar hibernate mode
-  //Serial.print("Z+")
+  // Sleep setup
+  esp_sleep_enable_uart_wakeup(0);
 }
 
 void loop() {
-  //checkbutton();
-
+  
   ltime = (unsigned long)(millis() - millidif);
 
   // Update time
   if (ltime >= 1000){
     millidif = millidif + ltime;
     ltime = 0;
+    TIME_SINCE_VAL+=1;
 
     if (59 < ++timeinfo.tm_sec){
       timeinfo.tm_sec = 0;
@@ -121,12 +116,17 @@ void loop() {
       }
     }
   }
+  
   // Handle data from radar
   if (Serial.available()){
+    TIME_SINCE_VAL = 0;
     speed = Serial.readString().toInt();
     values.concat(" "+String(speed));
+    
+    d1 = speed % 10;
+    d2 = speed / 10;
 
-    // Set digits
+    // Handle flashing of digits
     flash_time = (unsigned long)(millis() - flash_millidif);
 
     if (flash_time >= 50){
@@ -134,40 +134,50 @@ void loop() {
         flash_time = 0;
         flash_flag = (flash_flag + 1) % 2;
     }
-    if (flash_flag == 1) {
-      d1 = speed % 10;
-      digitalWrite(DECODER0, dec_bin[10][0]);
-      digitalWrite(DECODER1, dec_bin[10][1]);
-      digitalWrite(DECODER2, dec_bin[10][2]);
-      digitalWrite(DECODER3, dec_bin[10][3]);
-      if (speed > 9){
-        d2 = speed / 10;
+    // Set digits
+    if (speed > SPEED_LIMIT){
+      if (flash_flag == 1) {
+        
+        digitalWrite(DECODER0, dec_bin[10][0]);
+        digitalWrite(DECODER1, dec_bin[10][1]);
+        digitalWrite(DECODER2, dec_bin[10][2]);
+        digitalWrite(DECODER3, dec_bin[10][3]);
+        
         digitalWrite(DECODER4, dec_bin[d2][0]);
         digitalWrite(DECODER5, dec_bin[d2][1]);
         digitalWrite(DECODER6, dec_bin[d2][2]);
         digitalWrite(DECODER7, dec_bin[d2][3]);
       }
-    }
-    else {
-      if (speed > 9){
-        d2 = speed / 10;
+      else {
+        digitalWrite(DECODER0, dec_bin[d1][0]);
+        digitalWrite(DECODER1, dec_bin[d1][1]);
+        digitalWrite(DECODER2, dec_bin[d1][2]);
+        digitalWrite(DECODER3, dec_bin[d1][3]);
+
         digitalWrite(DECODER4, dec_bin[10][0]);
         digitalWrite(DECODER5, dec_bin[10][1]);
         digitalWrite(DECODER6, dec_bin[10][2]);
         digitalWrite(DECODER7, dec_bin[10][3]);
       }
-      digitalWrite(DECODER4, dec_bin[d1][0]);
-      digitalWrite(DECODER5, dec_bin[d1][1]);
-      digitalWrite(DECODER6, dec_bin[d1][2]);
-      digitalWrite(DECODER7, dec_bin[d1][3]);
     }
-  }
+    else{
+      digitalWrite(DECODER0, dec_bin[d1][0]);
+      digitalWrite(DECODER1, dec_bin[d1][1]);
+      digitalWrite(DECODER2, dec_bin[d1][2]);
+      digitalWrite(DECODER3, dec_bin[d1][3]);
+
+      digitalWrite(DECODER4, dec_bin[d2][0]);
+      digitalWrite(DECODER5, dec_bin[d2][1]);
+      digitalWrite(DECODER6, dec_bin[d2][2]);
+      digitalWrite(DECODER7, dec_bin[d2][3]);
+    }
   // No data -> new line and timestamp
   else{
+    
     char timestamp[maxsize];
     strftime(timestamp, maxsize, "%D-%T", &timeinfo);
     values.concat("\n"+String(timestamp));
-
+    
     digitalWrite(DECODER0, dec_bin[10][0]);
     digitalWrite(DECODER1, dec_bin[10][1]);
     digitalWrite(DECODER2, dec_bin[10][2]);
@@ -177,31 +187,15 @@ void loop() {
     digitalWrite(DECODER6, dec_bin[10][2]);
     digitalWrite(DECODER7, dec_bin[10][3]);
   }
+  // Handle sleep
+  if (3 <= TIME_SINCE_VAL){
+    TIME_SINCE_VAL = 0;
+    Serial.flush();
+    delay(100);
+    esp_light_sleep_enable();
+  }
 }
 
 void config() {
   //TO DO
-}
-
-void checkbutton() {
-  int read = digitalRead(BUTTON0);
-  if (read == HIGH) {
-    bflag = true;
-  }
-  else if (bflag == true && read == LOW){
-    // send sample data
-    Serial.println("Button pressed");
-    configTime(0, 0, "pool.ntp.org");
-    if(!getLocalTime(&timeinfo)){
-      Serial.println("Failed to obtain time");
-      return;
-    }
-
-    char timestamp[maxsize];
-    strftime(timestamp, maxsize, "%D-%T", &timeinfo);
-
-    send_TestData((String(timestamp)+" 99 99 99\n"));
-    bflag = false;
-  }
-  
 }
