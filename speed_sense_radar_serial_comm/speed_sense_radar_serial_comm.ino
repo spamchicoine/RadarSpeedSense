@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#include <driver/uart.h>
+
 #include "WiFi.h"
 #include "time.h"
 #include "wifi_setup.h"
@@ -85,7 +88,13 @@ void setup() {
   digitalWrite(DECODER7, dec_bin[10][3]);
 
   // Sleep setup
-  esp_sleep_enable_uart_wakeup(0);
+  gpio_sleep_set_direction(GPIO_NUM_20, GPIO_MODE_INPUT);
+  gpio_sleep_set_pull_mode(GPIO_NUM_20, GPIO_PULLUP_ONLY);
+
+  uart_set_wakeup_threshold(UART_NUM_0, 3);   // 3 edges on U0RXD to wakeup
+  esp_sleep_enable_uart_wakeup(UART_NUM_0);   // Enable UART 0 as wakeup source
+
+  Serial.flush();
 }
 
 void loop() {
@@ -188,11 +197,10 @@ void loop() {
     digitalWrite(DECODER7, dec_bin[10][3]);
   }
   // Handle sleep
-  if (3 <= TIME_SINCE_VAL){
+  if (5 <= TIME_SINCE_VAL){
     TIME_SINCE_VAL = 0;
+    esp_light_sleep_start();
     Serial.flush();
-    delay(100);
-    esp_light_sleep_enable();
     // Light sleep will resume here, wifi is turned off.
     setup_wifi();
   }
