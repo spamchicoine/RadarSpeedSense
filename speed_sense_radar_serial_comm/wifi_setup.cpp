@@ -25,10 +25,10 @@ void setup_wifi(){
     WiFi.begin(ssid, password);
     
     while (WiFi.status() != WL_CONNECTED) {
-        Serial.println("Connecting...")
+        Serial.println("Connecting...");
         delay(1000);
     }
-    Serial.println("Connected")
+    Serial.println("Connected");
 }
 
 void send_SpeedData(String Data) {

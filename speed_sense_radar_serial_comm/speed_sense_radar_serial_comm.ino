@@ -99,9 +99,9 @@ void setup() {
 
 void loop() {
   
+  // Update Time
   ltime = (unsigned long)(millis() - millidif);
 
-  // Update time
   if (ltime >= 1000){
     millidif = millidif + ltime;
     ltime = 0;
@@ -146,11 +146,10 @@ void loop() {
     // Set digits
     if (speed > SPEED_LIMIT){
       if (flash_flag == 1) {
-        
-        digitalWrite(DECODER0, dec_bin[10][0]);
-        digitalWrite(DECODER1, dec_bin[10][1]);
-        digitalWrite(DECODER2, dec_bin[10][2]);
-        digitalWrite(DECODER3, dec_bin[10][3]);
+        digitalWrite(DECODER0, dec_bin[d1][0]);
+        digitalWrite(DECODER1, dec_bin[d1][1]);
+        digitalWrite(DECODER2, dec_bin[d1][2]);
+        digitalWrite(DECODER3, dec_bin[d1][3]);
         
         digitalWrite(DECODER4, dec_bin[d2][0]);
         digitalWrite(DECODER5, dec_bin[d2][1]);
@@ -158,10 +157,10 @@ void loop() {
         digitalWrite(DECODER7, dec_bin[d2][3]);
       }
       else {
-        digitalWrite(DECODER0, dec_bin[d1][0]);
-        digitalWrite(DECODER1, dec_bin[d1][1]);
-        digitalWrite(DECODER2, dec_bin[d1][2]);
-        digitalWrite(DECODER3, dec_bin[d1][3]);
+        digitalWrite(DECODER0, dec_bin[10][0]);
+        digitalWrite(DECODER1, dec_bin[10][1]);
+        digitalWrite(DECODER2, dec_bin[10][2]);
+        digitalWrite(DECODER3, dec_bin[10][3]);
 
         digitalWrite(DECODER4, dec_bin[10][0]);
         digitalWrite(DECODER5, dec_bin[10][1]);
@@ -180,6 +179,7 @@ void loop() {
       digitalWrite(DECODER6, dec_bin[d2][2]);
       digitalWrite(DECODER7, dec_bin[d2][3]);
     }
+  }
   // No data -> new line and timestamp
   else{
     
@@ -200,9 +200,9 @@ void loop() {
   if (5 <= TIME_SINCE_VAL){
     TIME_SINCE_VAL = 0;
     esp_light_sleep_start();
-    Serial.flush();
-    // Light sleep will resume here, wifi is turned off.
-    setup_wifi();
+    Serial.read();
+    // Light sleep will resume here
+    // setup_wifi(); // Not sure if this is needed
   }
 }
 
