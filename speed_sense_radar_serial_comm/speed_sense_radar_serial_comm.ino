@@ -6,16 +6,16 @@
 #include "wifi_setup.h"
 
 // Digit 1
-const int DECODER0 = D0;
-const int DECODER1 = D3;
-const int DECODER2 = D2;
-const int DECODER3 = D1;
+const int DECODER0 = D1;
+const int DECODER1 = D2;
+const int DECODER2 = D3;
+const int DECODER3 = D0;
 
 // Digit 2
-const int DECODER4 = D5;
-const int DECODER5 = D8;
-const int DECODER6 = D9;
-const int DECODER7 = D10;
+const int DECODER4 = D10;
+const int DECODER5 = D9;
+const int DECODER6 = D8;
+const int DECODER7 = D5;
 
 // Values to send to client
 String values = String("");
@@ -128,13 +128,25 @@ void loop() {
   
   // Handle data from radar
   if (Serial.available()){
+    // Reset sleep counter
     TIME_SINCE_VAL = 0;
+
+    // returns 0 if invalid, radar will have minimum threshold above this anyways
     speed = Serial.readString().toInt();
+    
+    // assign digit values
+    if (0 == speed){
+      d1 = 10;
+      d2 = 10;
+    }
+    else{
+      d1 = speed % 10;
+      d2 = speed / 10;
+    }
+    
+    // Add reading to values
     values.concat(" "+String(speed));
     
-    d1 = speed % 10;
-    d2 = speed / 10;
-
     // Handle flashing of digits
     flash_time = (unsigned long)(millis() - flash_millidif);
 
@@ -200,7 +212,7 @@ void loop() {
   if (5 <= TIME_SINCE_VAL){
     TIME_SINCE_VAL = 0;
     esp_light_sleep_start();
-    Serial.read();
+    Serial.readString();
     // Light sleep will resume here
     // setup_wifi(); // Not sure if this is needed
   }
