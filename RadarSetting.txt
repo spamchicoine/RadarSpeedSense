@@ -27,6 +27,7 @@ PA - Active power mode
 P! - System reset
 M>n -  Only report magnitudes above n
 Y<n.n - Alert above speed n.n, output msg and pin2 (J3)
+OT/Ot - Turn time stamp since boot on/off
 
 ==== Hibernate ====
 Radar sends pulses in between hibernate time, if reading matches filters set the radar will stay on.
