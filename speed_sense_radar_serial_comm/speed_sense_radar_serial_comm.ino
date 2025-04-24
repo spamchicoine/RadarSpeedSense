@@ -27,6 +27,7 @@ const int DECODER7 = D5;
 String values = String("");
 
 // Digit values
+char read_radar_buffer[3];
 int speed, d1, d2;
 const int SPEED_LIMIT = 25;
 
@@ -56,7 +57,6 @@ int dec_bin[][4] = {{0,0,0,0},
                     {1,0,1,0}}; // 10 for blank
 
 void setup() {
-  
   
   WiFi.mode(WIFI_OFF);
   if(debug) {
@@ -106,23 +106,6 @@ void setup() {
   char timestamp[20];
   strftime(timestamp, 20, "%D-%T", &timeinfo);
   values.concat(String(timestamp));
-
-  // GPIO 20 is the default UART_0 RX pin
-  gpio_sleep_set_direction(GPIO_NUM_20, GPIO_MODE_INPUT);
-  gpio_sleep_set_pull_mode(GPIO_NUM_20, GPIO_PULLUP_ONLY);
-
-  uart_set_wakeup_threshold(UART_NUM_0, 3);   // 3 edges on U0RXD to wakeup
-  esp_sleep_enable_uart_wakeup(UART_NUM_0);   // Enable UART 0 as wakeup source
-
-  gpio_sleep_set_pull_mode(GPIO_NUM_3, GPIO_PULLUP_ONLY);
-  gpio_sleep_set_pull_mode(GPIO_NUM_4, GPIO_PULLDOWN_ONLY);
-  gpio_sleep_set_pull_mode(GPIO_NUM_5, GPIO_PULLUP_ONLY);
-  gpio_sleep_set_pull_mode(GPIO_NUM_2, GPIO_PULLDOWN_ONLY);
-
-  gpio_sleep_set_pull_mode(GPIO_NUM_10, GPIO_PULLUP_ONLY);
-  gpio_sleep_set_pull_mode(GPIO_NUM_9, GPIO_PULLDOWN_ONLY);
-  gpio_sleep_set_pull_mode(GPIO_NUM_8, GPIO_PULLUP_ONLY);
-  gpio_sleep_set_pull_mode(GPIO_NUM_7, GPIO_PULLDOWN_ONLY);
 
 }
 
@@ -179,25 +162,23 @@ void loop() {
   // Handle data from radar
   if (Serial.available()){
 
-    // returns 0 if invalid, radar will have minimum threshold above this anyways
-    speed = Serial.readString().toInt();
-
     if (STAMP_FLAG == 1){
       char timestamp[20];
       strftime(timestamp, 20, "%D-%T", &timeinfo);
       values.concat(String(timestamp));
       STAMP_FLAG = 0;
     }
+
+    Serial.readBytes(read_radar_buffer, 3);
+   
+    while(Serial.available()){
+      char t= Serial.read();
+    }
     
-    // assign digit values
-    if (0 == speed){
-      d1 = 10;
-      d2 = 10;
-    }
-    else{
-      d1 = speed % 10;
-      d2 = speed / 10;
-    }
+    d2 = read_radar_buffer[0] - '0';
+    d1 = read_radar_buffer[1] - '0';
+
+    speed = d2*10 + d1;
 
     // Add reading to values
     values.concat(" "+String(speed));
@@ -205,15 +186,28 @@ void loop() {
   } 
 
   if (TIME_SINCE_VAL <= 3){
-    digitalWrite(DECODER0, dec_bin[d2][0]);
-    digitalWrite(DECODER1, dec_bin[d2][1]);
-    digitalWrite(DECODER2, dec_bin[d2][2]);
-    digitalWrite(DECODER3, dec_bin[d2][3]);
-    
-    digitalWrite(DECODER4, dec_bin[d1][0]);
-    digitalWrite(DECODER5, dec_bin[d1][1]);
-    digitalWrite(DECODER6, dec_bin[d1][2]);
-    digitalWrite(DECODER7, dec_bin[d1][3]);
+    if ((speed > SPEED_LIMIT) && (flash_flag == 1)){
+      digitalWrite(DECODER0, dec_bin[10][0]);
+      digitalWrite(DECODER1, dec_bin[10][1]);
+      digitalWrite(DECODER2, dec_bin[10][2]);
+      digitalWrite(DECODER3, dec_bin[10][3]);
+      
+      digitalWrite(DECODER4, dec_bin[10][0]);
+      digitalWrite(DECODER5, dec_bin[10][1]);
+      digitalWrite(DECODER6, dec_bin[10][2]);
+      digitalWrite(DECODER7, dec_bin[10][3]);
+    }
+    else{
+      digitalWrite(DECODER0, dec_bin[d2][0]);
+      digitalWrite(DECODER1, dec_bin[d2][1]);
+      digitalWrite(DECODER2, dec_bin[d2][2]);
+      digitalWrite(DECODER3, dec_bin[d2][3]);
+      
+      digitalWrite(DECODER4, dec_bin[d1][0]);
+      digitalWrite(DECODER5, dec_bin[d1][1]);
+      digitalWrite(DECODER6, dec_bin[d1][2]);
+      digitalWrite(DECODER7, dec_bin[d1][3]);
+    }
   }
   else{
     
@@ -235,6 +229,17 @@ void loop() {
     
     STAMP_FLAG = 1;
 
-    //esp_light_sleep_start();
   }
 }
+/*
+void change_display(d1,  d2){
+  digitalWrite(DECODER0, dec_bin[d2][0]);
+  digitalWrite(DECODER1, dec_bin[d2][1]);
+  digitalWrite(DECODER2, dec_bin[d2][2]);
+  digitalWrite(DECODER3, dec_bin[d2][3]);
+  
+  digitalWrite(DECODER4, dec_bin[d1][0]);
+  digitalWrite(DECODER5, dec_bin[d1][1]);
+  digitalWrite(DECODER6, dec_bin[d1][2]);
+  digitalWrite(DECODER7, dec_bin[d1][3]);
+}*/
